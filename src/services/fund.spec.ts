@@ -14,11 +14,28 @@ describe("fund", () => {
     jest.clearAllMocks();
   });
 
-  describe("create fund", () => {
+  const fundId = "test_fund_id";
+  const userId = "test_user_id";
+  const fundName = "test fund";
+  const userName = "test user";
+
+  const mockFund = {
+    _id: fundId,
+    name: fundName,
+    balance: 20,
+    previous_balance: 0,
+    user_id: userId,
+    users: [userId],
+  };
+
+  const mockUser = {
+    _id: userId,
+    name: userName,
+  };
+
+  describe("createFund", () => {
     it("should return 404 if user is not found", async () => {
       //arrange
-      const userId = "ijgknfd";
-      const name = "jkkjjk";
 
       //mock user find by id
       (User.findById as jest.Mock).mockResolvedValue(null);
@@ -27,12 +44,34 @@ describe("fund", () => {
       //     .spyOn(fundModule, "createFund")
 
       //act
-      const response = await fundModule.createFund(userId, name);
+      const response = await fundModule.createFund(userId, fundName);
 
       expect(User.findById).toHaveBeenCalledWith(userId);
       expect(response.status).toBe(404);
       expect(response.message).toBe("Invalid user id");
       expect(response.fund).toBe(null);
+    });
+
+    it("should create fund", async () => {
+      (User.findById as jest.Mock).mockResolvedValue(mockUser);
+      (Fund.create as jest.Mock).mockResolvedValue(mockFund);
+
+      const response = await fundModule.createFund(userId, fundName);
+
+      expect(response.fund).toEqual(mockFund);
+      expect(response.status).toBe(200);
+      expect(response.message).toBe("Fund creation successful");
+    });
+
+    it("should return error when something goes wrong", async () => {
+      (User.findById as jest.Mock).mockImplementation(() => {
+        throw new Error("Something went wrong");
+      });
+      const response = await fundModule.createFund(userId, fundName);
+
+      expect(response.message).toMatch("Error");
+      expect(response.status).toBe(500);
+      console.log(response.error);
     });
   });
 });

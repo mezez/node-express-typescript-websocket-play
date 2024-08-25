@@ -31,6 +31,7 @@ export const create = async (
   }
 
   responseData.message = operationResponse.message;
+  responseData.data = operationResponse.fund;
   return res.status(operationResponse.status).send(responseData);
 };
 
